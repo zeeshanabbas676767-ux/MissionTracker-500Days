@@ -44,33 +44,6 @@
     .dashboard-title { font-size: 28px; font-weight: 800; margin: 0; color: var(--primary); }
     .dashboard-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
 
-    /* GitHub Sync Control Bar */
-    .github-bar {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .github-inputs {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .github-status {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -167,6 +140,7 @@
     .btn-secondary { background: #475569; color: white; }
     .btn-danger { background: var(--danger); color: white; }
     .btn-success { background: var(--success); color: white; }
+    .btn-gold { background: linear-gradient(135deg, #f2b84b, #d99a2b); color: #241a06; }
 
     /* Table */
     .table-responsive { overflow-x: auto; max-height: 400px; }
@@ -197,10 +171,6 @@
       margin-right: 4px;
     }
 
-    @media (max-width: 900px) {
-      .charts-grid { grid-template-columns: 1fr; }
-    }
-  
     /* 500-Day Mission Probability System */
     .mission-hero {
       background: linear-gradient(135deg, rgba(56,189,248,.12), rgba(139,92,246,.12));
@@ -270,10 +240,6 @@
     .ai-progress-value { font-size:26px; font-weight:900; color:var(--primary); }
     .ai-progress-breakdown { margin-top:8px; font-size:12px; color:var(--text-muted); line-height:1.6; }
     .ai-progress-breakdown b { color:var(--text-main); }
-    @media (max-width: 900px) {
-      .probability-layout { grid-template-columns:1fr; }
-      .mission-countdown { text-align:left; }
-    }
 
     /* ===================== 500-DAY CELEBRATION VIEW ===================== */
     #celebrationOverlay {
@@ -369,7 +335,12 @@
     @keyframes celebBadgeSpin { to { transform: rotate(360deg); } }
 
     .celeb-actions { display: flex; gap: 10px; justify-content: center; opacity: 0; }
-    .btn-gold { background: linear-gradient(135deg, #f2b84b, #d99a2b); color: #241a06; }
+
+    @media (max-width: 900px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .probability-layout { grid-template-columns:1fr; }
+      .mission-countdown { text-align:left; }
+    }
   </style>
 </head>
 <body>
@@ -443,17 +414,6 @@
         <button class="btn btn-danger" onclick="resetAllData()">Reset All</button>
         <button class="btn btn-secondary" onclick="showCelebration()" title="Preview the 500-day completion view anytime, using your real current stats">Preview Celebration 🎉</button>
       </div>
-    </div>
-
-    <!-- GitHub Integration Sync Control Bar -->
-    <div class="github-bar">
-      <div class="github-inputs">
-        <span style="font-size:13px; font-weight:700; color:var(--primary);">GitHub Cloud Sync:</span>
-        <input type="password" id="ghToken" class="form-control" style="width: 220px;" placeholder="Personal Access Token (PAT)" onchange="saveGithubToken(this.value)">
-        <button class="btn btn-primary" onclick="loadFromGitHub()">Load from GitHub</button>
-        <button class="btn btn-secondary" onclick="saveToGitHub()">Sync to GitHub</button>
-      </div>
-      <div class="github-status" id="ghStatus">Status: Idle</div>
     </div>
 
     <!-- Live Stat Cards -->
@@ -645,7 +605,7 @@
       </div>
     </div>
 
-    <!-- History Logs Table with Action Buttons -->
+    <!-- History Logs Table -->
     <div class="card">
       <div class="card-header">
         <h3 class="card-title">Specific Mission Logs</h3>
@@ -698,153 +658,61 @@
 
   </div>
 
+  <!-- 500-DAY CELEBRATION VIEW OVERLAY -->
+  <div id="celebrationOverlay">
+    <button class="celeb-close-x" onclick="closeCelebration()">✕</button>
+    <div class="celeb-stars" id="celebStars"></div>
+    <canvas id="celebConfettiCanvas"></canvas>
+
+    <div class="celeb-stage">
+      <div class="celeb-eyebrow"><span class="celeb-status-dot"></span> Mission Status: <b>Complete</b></div>
+
+      <div class="celeb-orbit-wrap">
+        <svg viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="celebOrbitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" />
+              <stop offset="100%" stop-color="#f2b84b" />
+            </linearGradient>
+          </defs>
+          <circle class="celeb-orbit-track" cx="100" cy="100" r="90" />
+          <circle class="celeb-orbit-fill" cx="100" cy="100" r="90" />
+        </svg>
+        <div class="celeb-satellite"></div>
+        <div class="celeb-orbit-center">
+          <div class="celeb-orbit-num" id="celebOrbitNum">0</div>
+          <div class="celeb-orbit-den">/ 500 DAYS</div>
+        </div>
+      </div>
+
+      <h1 class="celeb-headline" id="celebHeadline">Mission Day 500 — you showed up.</h1>
+      <p class="celeb-debrief" id="celebDebrief">500 days of code shipped, streaks kept, hard days worked through anyway. This wasn't luck — it's the log below, day after day.</p>
+
+      <div class="celeb-stat-row" id="celebStatRow">
+        <div class="celeb-stat-capsule gold"><div class="celeb-label">Final Success Probability</div><div class="celeb-value" id="celebStatProb">0%</div></div>
+        <div class="celeb-stat-capsule cyan"><div class="celeb-label">Average Daily Progress</div><div class="celeb-value" id="celebStatAvg">0%</div></div>
+        <div class="celeb-stat-capsule green"><div class="celeb-label">Total Days Logged</div><div class="celeb-value" id="celebStatLogged">0 / 500</div></div>
+        <div class="celeb-stat-capsule cyan"><div class="celeb-label">Longest Coding Streak</div><div class="celeb-value" id="celebStatStreak">🔥 0 Days</div></div>
+      </div>
+
+      <div class="celeb-milestones" id="celebMilestones">
+        <div class="celeb-milestone-dots" id="celebMilestoneDots"></div>
+      </div>
+
+      <div class="celeb-badge-wrap" id="celebBadgeWrap">
+        <div class="celeb-badge"><span class="celeb-badge-emoji">🎖️</span></div>
+      </div>
+
+      <div class="celeb-actions" id="celebActions">
+        <button class="btn btn-gold" onclick="closeCelebration(true)">View Full Mission Report</button>
+        <button class="btn btn-secondary" onclick="closeCelebration()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // ==========================================
-    // STEP 1: TOP CONFIGURATION VARIABLES
-    // ==========================================
-    let GITHUB_USERNAME = 'ZeeshanAbbas0';
-    let GITHUB_REPO = '500-days-personal-progress-tracker';
-    let GITHUB_FILE_PATH = 'mission_data.json';
-    let GITHUB_TOKEN = localStorage.getItem('gh_token') || '';
-
-    const MISSION_START_DATE = '2026-07-27';
-    const MISSION_END_DATE = '2027-12-08';
-
-    const MISSION_START = new Date(MISSION_START_DATE + 'T00:00:00');
-    const MISSION_END = new Date(MISSION_END_DATE + 'T23:59:59');
-    const MISSION_DAYS = 500;
-
-    let currentFileSha = null; // Tracks GitHub commit SHA to prevent write conflicts
-
     document.getElementById('entryDate').valueAsDate = new Date();
     let savedEntries = JSON.parse(localStorage.getItem('mission_data')) || [];
-
-    // Initialize token input if saved
-    if (GITHUB_TOKEN) {
-      document.getElementById('ghToken').value = GITHUB_TOKEN;
-    }
-
-    function saveGithubToken(val) {
-      GITHUB_TOKEN = val.trim();
-      localStorage.setItem('gh_token', GITHUB_TOKEN);
-      updateGhStatus('Token updated locally', 'var(--primary)');
-    }
-
-    function updateGhStatus(msg, color = 'var(--text-muted)') {
-      const el = document.getElementById('ghStatus');
-      el.innerText = 'Status: ' + msg;
-      el.style.color = color;
-    }
-
-    // ==========================================
-    // STEP 2: LOAD & SAVE GITHUB FUNCTIONS
-    // ==========================================
-    async function loadFromGitHub() {
-      if (!GITHUB_TOKEN) {
-        updateGhStatus('Missing GitHub Personal Access Token', 'var(--warning)');
-        return;
-      }
-
-      updateGhStatus('Fetching from GitHub...', 'var(--primary)');
-      const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
-
-      try {
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `token ${GITHUB_TOKEN}`,
-            'Accept': 'application/vnd.github.v3+json'
-          }
-        });
-
-        if (response.status === 404) {
-          updateGhStatus('Remote file not found. Will be created on first sync.', 'var(--warning)');
-          currentFileSha = null;
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error(`HTTP Error ${response.status}`);
-        }
-
-        const data = await response.json();
-        currentFileSha = data.sha;
-
-        // Decode UTF-8 Base64 content
-        const jsonString = decodeURIComponent(escape(atob(data.content)));
-        const remoteData = JSON.parse(jsonString);
-
-        if (Array.isArray(remoteData)) {
-          savedEntries = remoteData;
-          localStorage.setItem('mission_data', JSON.stringify(savedEntries));
-          updateView();
-          updateGhStatus('Loaded successfully from GitHub!', 'var(--success)');
-        } else {
-          throw new Error('Invalid JSON format in remote file');
-        }
-      } catch (err) {
-        console.error('GitHub Load Error:', err);
-        updateGhStatus('Load failed: ' + err.message, 'var(--danger)');
-      }
-    }
-
-    async function saveToGitHub() {
-      if (!GITHUB_TOKEN) {
-        updateGhStatus('Missing Token - Saved locally only', 'var(--warning)');
-        return;
-      }
-
-      updateGhStatus('Syncing to GitHub...', 'var(--primary)');
-      const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
-
-      try {
-        // Fetch fresh SHA if missing to prevent 409 conflict
-        if (!currentFileSha) {
-          const getRes = await fetch(url, {
-            headers: {
-              'Authorization': `token ${GITHUB_TOKEN}`,
-              'Accept': 'application/vnd.github.v3+json'
-            }
-          });
-          if (getRes.ok) {
-            const getData = await getRes.json();
-            currentFileSha = getData.sha;
-          }
-        }
-
-        const jsonString = JSON.stringify(savedEntries, null, 2);
-        // Encode UTF-8 to Base64
-        const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
-
-        const payload = {
-          message: `Update mission logs [${new Date().toISOString().slice(0,10)}]`,
-          content: contentBase64,
-          sha: currentFileSha || undefined
-        };
-
-        const putRes = await fetch(url, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `token ${GITHUB_TOKEN}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/vnd.github.v3+json'
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (!putRes.ok) {
-          const errorData = await putRes.json();
-          throw new Error(errorData.message || `HTTP ${putRes.status}`);
-        }
-
-        const resData = await putRes.json();
-        currentFileSha = resData.content.sha;
-        updateGhStatus('Synced successfully with GitHub!', 'var(--success)');
-      } catch (err) {
-        console.error('GitHub Sync Error:', err);
-        updateGhStatus('Sync failed: ' + err.message, 'var(--danger)');
-      }
-    }
-
     populateDurationSelects();
 
     // Chart Config Options
@@ -908,6 +776,14 @@
       }
     });
 
+    // ==========================================
+    // 500-DAY MISSION ANALYTICS ENGINE
+    // 27 July 2026 through 8 December 2027
+    // ==========================================
+    const MISSION_START = new Date('2026-07-27T00:00:00');
+    const MISSION_END = new Date('2027-12-08T23:59:59');
+    const MISSION_DAYS = 500;
+
     function clamp(value, min=0, max=100) {
       return Math.max(min, Math.min(max, Number(value) || 0));
     }
@@ -969,6 +845,9 @@
       return Math.max(1, Math.min(MISSION_DAYS, diff + 1));
     }
 
+    // ==========================================
+    // INTELLIGENT DAILY PROGRESS ENGINE
+    // ==========================================
     function calculateDailyProgress(f) {
       const lines = [];
       let total = 0;
@@ -1111,6 +990,7 @@
       const progress = clamp(e.progress);
       const routine = getEntryRoutineScore(e);
       const eyePenalty = e.eyeVal === 2 ? 12 : e.eyeVal === 1 ? 4 : 0;
+
       return clamp(progress * 0.65 + routine * 0.35 - eyePenalty);
     }
 
@@ -1332,6 +1212,7 @@
       tableBody.innerHTML = '';
 
       const indices = getFilteredIndices().sort((a, b) => savedEntries[b].date.localeCompare(savedEntries[a].date));
+
       emptyNotice.style.display = indices.length === 0 ? 'block' : 'none';
 
       indices.forEach((index) => {
@@ -1398,14 +1279,11 @@
       document.getElementById('socialStreakValue').innerText = `${socialStreak} Day${socialStreak === 1 ? '' : 's'}`;
     }
 
-    // ==========================================
-    // STEP 3: CONNECT FUNCTIONS TO UI & STARTUP
-    // ==========================================
-    async function saveEntry() {
+    function saveEntry() {
       const dateVal = document.getElementById('entryDate').value;
       if (!dateVal) { alert('Please choose a valid date.'); return; }
-      if (dateVal < MISSION_START_DATE || dateVal > MISSION_END_DATE) {
-        alert(`This tracker is locked to the 500-day mission: ${MISSION_START_DATE} through ${MISSION_END_DATE}.`);
+      if (dateVal < '2026-07-27' || dateVal > '2027-12-08') {
+        alert('This tracker is locked to the 500-day mission: 27 July 2026 through 8 December 2027.');
         return;
       }
 
@@ -1453,11 +1331,6 @@
       localStorage.setItem('mission_data', JSON.stringify(savedEntries));
       cancelEdit();
       updateView();
-
-      // Auto-sync to GitHub if token is set
-      if (GITHUB_TOKEN) {
-        await saveToGitHub();
-      }
     }
 
     function editEntry(index) {
@@ -1516,26 +1389,20 @@
       updateAIProgressPreview();
     }
 
-    async function deleteEntry(index) {
+    function deleteEntry(index) {
       const targetDate = savedEntries[index].date;
       if (confirm(`Are you sure you want to delete the mission entry for ${targetDate}?`)) {
         savedEntries.splice(index, 1);
         localStorage.setItem('mission_data', JSON.stringify(savedEntries));
         updateView();
-        if (GITHUB_TOKEN) {
-          await saveToGitHub();
-        }
       }
     }
 
-    async function resetAllData() {
+    function resetAllData() {
       if (confirm("Are you sure you want to wipe ALL history permanently?")) {
         localStorage.removeItem('mission_data');
         savedEntries = [];
         updateView();
-        if (GITHUB_TOKEN) {
-          await saveToGitHub();
-        }
       }
     }
 
@@ -1554,7 +1421,7 @@
       a.click();
     }
 
-    // Migration
+    // Data Migration Check
     let migrated = false;
     savedEntries = savedEntries.map(e => {
       if (e.progressSource === 'intelligent' && e.progressLines) return e;
@@ -1566,25 +1433,23 @@
       localStorage.setItem('mission_data', JSON.stringify(savedEntries));
     }
 
+    // Dynamic field update listeners
     ['laptopHours','laptopMinutes','mobileHours','mobileMinutes','eyeStatus','rule202020','exercise','codingToday','newLogic','english','dayReview','behavior',
      'readAloud','voiceAttempt','reactedCalmly','stressReflection','meaningfulContact','followedSchedule','idleHours','idleMinutes','bedtime','studyMinutes','proposalsSent']
       .forEach(id => {
         const el = document.getElementById(id);
-        el.addEventListener('input', updateAIProgressPreview);
-        el.addEventListener('change', updateAIProgressPreview);
+        if(el) {
+          el.addEventListener('input', updateAIProgressPreview);
+          el.addEventListener('change', updateAIProgressPreview);
+        }
       });
 
-    // Startup sequence
+    // Initial Load
     updateAIProgressPreview();
     updateView();
 
-    // Auto-load data from GitHub on page startup if token is available
-    if (GITHUB_TOKEN) {
-      loadFromGitHub();
-    }
-
     // ==========================================
-    // 500-DAY CELEBRATION VIEW
+    // 500-DAY CELEBRATION VIEW LOGIC
     // ==========================================
     function isConsecutiveDay(prevDateStr, curDateStr) {
       const d = new Date(prevDateStr + 'T00:00:00');
@@ -1848,58 +1713,5 @@
       }
     })();
   </script>
-
-  <!-- Celebration Modal -->
-  <div id="celebrationOverlay">
-    <button class="celeb-close-x" onclick="closeCelebration()">✕</button>
-    <div class="celeb-stars" id="celebStars"></div>
-    <canvas id="celebConfettiCanvas"></canvas>
-
-    <div class="celeb-stage">
-      <div class="celeb-eyebrow"><span class="celeb-status-dot"></span> Mission Status: <b>Complete</b></div>
-
-      <div class="celeb-orbit-wrap">
-        <svg viewBox="0 0 200 200">
-          <defs>
-            <linearGradient id="celebOrbitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#38bdf8" />
-              <stop offset="100%" stop-color="#f2b84b" />
-            </linearGradient>
-          </defs>
-          <circle class="celeb-orbit-track" cx="100" cy="100" r="90" />
-          <circle class="celeb-orbit-fill" cx="100" cy="100" r="90" />
-        </svg>
-        <div class="celeb-satellite"></div>
-        <div class="celeb-orbit-center">
-          <div class="celeb-orbit-num" id="celebOrbitNum">0</div>
-          <div class="celeb-orbit-den">/ 500 DAYS</div>
-        </div>
-      </div>
-
-      <h1 class="celeb-headline" id="celebHeadline">Mission Day 500 — you showed up.</h1>
-      <p class="celeb-debrief" id="celebDebrief">500 days of code shipped, streaks kept, hard days worked through anyway. This wasn't luck — it's the log below, day after day.</p>
-
-      <div class="celeb-stat-row" id="celebStatRow">
-        <div class="celeb-stat-capsule gold"><div class="celeb-label">Final Success Probability</div><div class="celeb-value" id="celebStatProb">0%</div></div>
-        <div class="celeb-stat-capsule cyan"><div class="celeb-label">Average Daily Progress</div><div class="celeb-value" id="celebStatAvg">0%</div></div>
-        <div class="celeb-stat-capsule green"><div class="celeb-label">Total Days Logged</div><div class="celeb-value" id="celebStatLogged">0 / 500</div></div>
-        <div class="celeb-stat-capsule cyan"><div class="celeb-label">Longest Coding Streak</div><div class="celeb-value" id="celebStatStreak">🔥 0 Days</div></div>
-      </div>
-
-      <div class="celeb-milestones" id="celebMilestones">
-        <div class="celeb-milestone-dots" id="celebMilestoneDots"></div>
-      </div>
-
-      <div class="celeb-badge-wrap" id="celebBadgeWrap">
-        <div class="celeb-badge"><span class="celeb-badge-emoji">🎖️</span></div>
-      </div>
-
-      <div class="celeb-actions" id="celebActions">
-        <button class="btn btn-gold" onclick="closeCelebration(true)">View Full Mission Report</button>
-        <button class="btn btn-secondary" onclick="closeCelebration()">Close</button>
-      </div>
-    </div>
-  </div>
-
 </body>
 </html>
