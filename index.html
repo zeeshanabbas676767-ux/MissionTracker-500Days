@@ -140,6 +140,7 @@
     .btn-secondary { background: #475569; color: white; }
     .btn-danger { background: var(--danger); color: white; }
     .btn-success { background: var(--success); color: white; }
+    .btn-warning { background: var(--warning); color: #000; }
     .btn-gold { background: linear-gradient(135deg, #f2b84b, #d99a2b); color: #241a06; }
 
     /* Table */
@@ -410,7 +411,9 @@
         <div class="dashboard-subtitle">Track, Analyze, & Master Your Life Goals Daily</div>
       </div>
       <div>
-        <button class="btn btn-success" onclick="exportCSV()">Export Data (Excel/CSV)</button>
+        <button class="btn btn-success" onclick="exportCSV()">Export Data</button>
+        <button class="btn btn-warning" onclick="triggerImport()">Import Data</button>
+        <input type="file" id="importFileInput" accept=".csv, .json" style="display:none;" onchange="handleImportFile(event)">
         <button class="btn btn-danger" onclick="resetAllData()">Reset All</button>
         <button class="btn btn-secondary" onclick="showCelebration()" title="Preview the 500-day completion view anytime, using your real current stats">Preview Celebration 🎉</button>
       </div>
@@ -1419,6 +1422,109 @@
       a.href = url;
       a.download = 'daily_mission_logs.csv';
       a.click();
+    }
+
+    // ==========================================
+    // IMPORT ENGINE (CSV & JSON)
+    // ==========================================
+    function triggerImport() {
+      document.getElementById('importFileInput').click();
+    }
+
+    function handleImportFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target.result;
+        try {
+          let importedLogs = [];
+          if (file.name.endsWith('.json')) {
+            importedLogs = JSON.parse(content);
+          } else {
+            importedLogs = parseCSVToEntries(content);
+          }
+
+          if (!Array.isArray(importedLogs) || importedLogs.length === 0) {
+            alert('No valid mission entries found in the uploaded file.');
+            return;
+          }
+
+          // Merge imported entries into savedEntries by date
+          let addedCount = 0;
+          let updatedCount = 0;
+
+          importedLogs.forEach(imp => {
+            if (!imp.date) return;
+            const recalculated = calculateDailyProgress(imp);
+            const fullEntry = { ...imp, progress: recalculated.progress, progressLines: recalculated.lines, progressSource: 'intelligent' };
+
+            const existingIdx = savedEntries.findIndex(e => e.date === imp.date);
+            if (existingIdx >= 0) {
+              savedEntries[existingIdx] = fullEntry;
+              updatedCount++;
+            } else {
+              savedEntries.push(fullEntry);
+              addedCount++;
+            }
+          });
+
+          localStorage.setItem('mission_data', JSON.stringify(savedEntries));
+          updateView();
+          alert(`Import successful!\nAdded: ${addedCount} entry/entries\nUpdated: ${updatedCount} entry/entries`);
+        } catch (err) {
+          alert('Error parsing file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = ''; // Reset input
+    }
+
+    function parseCSVToEntries(csvText) {
+      const lines = csvText.trim().split('\n');
+      if (lines.length <= 1) return [];
+      const headers = lines[0].split(',').map(h => h.trim());
+      const entries = [];
+
+      const eyeTextToVal = { 'No Pain': 0, 'Little Pain': 1, 'Extreme Pain': 2 };
+
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const cols = lines[i].split(',').map(c => c.trim().replace('%', ''));
+        const obj = {};
+        headers.forEach((h, idx) => { obj[h] = cols[idx] || ''; });
+
+        const eyeVal = eyeTextToVal[obj.EyePain] !== undefined ? eyeTextToVal[obj.EyePain] : 0;
+
+        entries.push({
+          date: obj.Date,
+          behavior: obj.Behavior || 'Normal',
+          english: obj.Duolingo || 'No',
+          exercise: obj.Exercise || 'No',
+          newLogic: obj.LogicFix || 'No',
+          codingToday: obj.Coding || 'No',
+          rule202020: obj.Rule202020 || 'No',
+          dayReview: obj.Review || 'No',
+          shops: Number(obj.Shops) || 0,
+          strangers: Number(obj.Strangers) || 0,
+          laptop: Number(obj.Laptop) || 0,
+          mobile: Number(obj.Mobile) || 0,
+          eyeVal: eyeVal,
+          eyeText: obj.EyePain || 'No Pain',
+          readAloud: obj.ReadAloud || 'No',
+          voiceAttempt: obj.VoiceAttempt || 'No',
+          reactedCalmly: obj.ReactedCalmly || 'NA',
+          stressReflection: obj.StressReflection || 'No',
+          meaningfulContact: obj.MeaningfulContact || 'No',
+          followedSchedule: obj.FollowedSchedule || 'No',
+          idle: Number(obj.IdleTime) || 0,
+          bedtime: obj.Bedtime || '',
+          studyMinutes: Number(obj.StudyMinutes) || 0,
+          proposalsSent: Number(obj.ProposalsSent) || 0
+        });
+      }
+      return entries;
     }
 
     // Data Migration Check
