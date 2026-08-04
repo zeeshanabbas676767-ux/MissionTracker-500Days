@@ -18,7 +18,6 @@
       --warning: #f59e0b;
     }
 
-    /* Reset & Prevent Horizontal Scroll */
     * { 
       box-sizing: border-box; 
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
@@ -34,13 +33,11 @@
       overflow-x: hidden;
     }
 
-    body {
-      padding: 12px;
-    }
+    body { padding: 12px; }
 
     .container { 
       width: 100%;
-      max-width: 1200px; 
+      max-width: 1280px; 
       margin: 0 auto; 
     }
 
@@ -71,16 +68,30 @@
       background: #0f172a;
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 12px;
+      padding: 12px 14px;
       text-align: center;
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     .stat-card .label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
     .stat-card .value { font-size: 18px; font-weight: 900; color: var(--text-main); margin-top: 4px; }
     .stat-card .value-highlight { color: var(--primary); }
-    .stat-card .value-timer { color: var(--warning); font-family: monospace; letter-spacing: 0.5px; font-size: 16px; }
+    
+    /* Countdown Timer Alignment Fix */
+    .stat-card .value-timer { 
+      color: var(--warning); 
+      font-family: monospace; 
+      letter-spacing: 0px; 
+      font-size: 15px; 
+      white-space: nowrap; 
+      width: 100%;
+      text-align: center;
+    }
 
-    /* Cards */
+    /* Cards Layout */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -99,7 +110,7 @@
     }
     .card-title { font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0; }
 
-    /* Form Inputs */
+    /* Form Controls */
     .form-group { margin-bottom: 14px; width: 100%; }
     .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
     
@@ -112,12 +123,18 @@
       border-radius: 10px; 
       font-size: 14px; 
       outline: none;
-      min-width: 0; /* Prevents overflow inside flex containers */
+      min-width: 0;
     }
     .form-control:focus { border-color: var(--primary); }
 
-    /* Habit Toggle Buttons */
-    .toggle-grid { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+    /* Default Mobile Toggle Buttons (Single Column) */
+    .toggle-grid { 
+      display: grid; 
+      grid-template-columns: 1fr; 
+      gap: 8px; 
+      width: 100%; 
+    }
+
     .toggle-btn {
       width: 100%;
       background: #0f172a; 
@@ -136,7 +153,7 @@
     .toggle-btn.active { background: rgba(56,189,248,0.15); border-color: var(--primary); color: var(--primary); }
 
     .duration-selects { display: flex; gap: 8px; width: 100%; }
-    .duration-selects select { flex: 1; min-width: 0; width: 50%; }
+    .duration-selects select { flex: 1; min-width: 0; }
 
     .form-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; width: 100%; }
     .btn-submit {
@@ -166,14 +183,14 @@
       display: none;
     }
 
-    /* Responsive Chart Container */
+    /* Chart Container */
     .chart-container { 
       width: 100%; 
       position: relative; 
-      height: 250px; 
+      height: 280px; 
     }
 
-    /* Table & Filter Controls */
+    /* Table & Filter Controls (Mobile Defaults) */
     .filter-select {
       background: #0f172a; 
       border: 1px solid var(--card-border); 
@@ -192,7 +209,7 @@
       border-radius: 8px;
     }
     table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
-    th, td { padding: 8px 10px; border-bottom: 1px solid var(--card-border); white-space: nowrap; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--card-border); white-space: nowrap; }
     th { background: #0f172a; color: var(--text-muted); font-weight: 700; }
 
     .badge-wrap { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -205,7 +222,7 @@
     .btn-edit { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); }
     .btn-delete { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
 
-    /* Danger Zone */
+    /* Danger Zone Card */
     .danger-zone-card {
       background: rgba(239, 68, 68, 0.05);
       border: 1px dashed rgba(239, 68, 68, 0.4);
@@ -218,7 +235,7 @@
     .danger-zone-card p { color: var(--text-muted); font-size: 11px; margin: 0 0 12px 0; }
     .btn-trigger-reset {
       background: var(--danger); color: #fff; border: none; font-weight: 800; font-size: 12px;
-      padding: 12px; border-radius: 10px; cursor: pointer; width: 100%;
+      padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; max-width: 300px;
     }
 
     /* Reset Security Modal Screen */
@@ -229,7 +246,7 @@
     }
     .modal-box {
       background: #111827; border: 1.5px solid var(--danger); border-radius: 16px;
-      padding: 16px; width: 100%; max-width: 400px;
+      padding: 20px; width: 100%; max-width: 440px;
     }
     .modal-box h3 { color: var(--danger); margin: 0 0 8px 0; font-size: 16px; font-weight: 900; }
     .modal-box p { color: var(--text-muted); font-size: 11px; line-height: 1.4; margin-bottom: 12px; }
@@ -249,14 +266,100 @@
     }
     .btn-modal-reset.active { opacity: 1; pointer-events: auto; }
 
-    /* Desktop View Enhancements */
+    /* =================================================== */
+    /* 💻 LAPTOP & DESKTOP ENHANCEMENTS (min-width: 768px)  */
+    /* =================================================== */
     @media (min-width: 768px) {
       body { padding: 24px; }
-      .mission-header { flex-direction: row; justify-content: space-between; align-items: center; }
-      .stats-container { flex-direction: row; width: auto; }
-      .stat-card { min-width: 140px; }
-      .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-      .filter-select { width: auto; }
+      
+      /* Header Alignment & Countdown Box Width */
+      .mission-header { 
+        flex-direction: row; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 20px 24px;
+      }
+      
+      .stats-container { 
+        flex-direction: row; 
+        width: auto; 
+        gap: 16px;
+      }
+      
+      .stat-card { 
+        min-width: 160px; 
+        padding: 12px 18px;
+      }
+
+      /* Specific fix for the Countdown box on Laptop */
+      .stat-card:nth-child(2) {
+        min-width: 210px; /* Gives full room so countdown doesn't spill over right edge */
+      }
+
+      .stat-card .value-timer {
+        font-size: 16px;
+        letter-spacing: 0px;
+      }
+
+      /* Grid for Form & Chart */
+      .grid-layout { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 20px; 
+      }
+      
+      .toggle-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 10px;
+      }
+
+      .filter-select { width: auto; font-size: 14px; padding: 10px 14px; }
+      .chart-container { height: 340px; }
+
+      /* Table Enlargement for Laptop View */
+      .card-title { font-size: 18px; }
+      table { font-size: 14px; }
+      th, td { padding: 12px 16px; }
+      
+      .badge { 
+        padding: 5px 9px; 
+        font-size: 11px; 
+        border-radius: 6px; 
+      }
+      .badge-wrap { gap: 6px; }
+
+      .btn-action { 
+        padding: 6px 12px; 
+        font-size: 12px; 
+        border-radius: 6px; 
+      }
+
+      .danger-zone-card { padding: 24px; }
+      .danger-zone-card h2 { font-size: 18px; }
+      .danger-zone-card p { font-size: 13px; }
+      .btn-trigger-reset { font-size: 14px; padding: 14px; max-width: 320px; }
+
+      /* Confirmation Modal Enlargement for Laptop View */
+      .modal-box { 
+        max-width: 520px; 
+        padding: 28px; 
+        border-width: 2px;
+      }
+      .modal-box h3 { font-size: 20px; margin-bottom: 10px; }
+      .modal-box p { font-size: 13px; margin-bottom: 16px; }
+      
+      .security-code-box { 
+        font-size: 12px; 
+        padding: 12px; 
+        margin-bottom: 16px;
+      }
+      
+      .form-control { font-size: 15px; padding: 12px 14px; }
+      
+      .btn-modal-cancel, .btn-modal-reset { 
+        padding: 12px; 
+        font-size: 14px; 
+      }
     }
   </style>
 </head>
@@ -278,7 +381,7 @@
         </div>
         <div class="stat-card">
           <div class="label">Countdown</div>
-          <div class="value value-timer" id="countdownVal">00 : 00 : 00 : 00</div>
+          <div class="value value-timer" id="countdownVal">000 : 00 : 00 : 00</div>
         </div>
         <div class="stat-card">
           <div class="label">Progress</div>
@@ -290,7 +393,7 @@
     <!-- Main Content Grid -->
     <div class="grid-layout">
 
-      <!-- Form Card -->
+      <!-- Daily Form Card -->
       <div class="card">
         <div class="card-header">
           <h2 class="card-title">📝 Log Daily Tasks</h2>
@@ -328,7 +431,7 @@
         </div>
       </div>
 
-      <!-- Chart Card -->
+      <!-- Chart Progress Card -->
       <div class="card">
         <div class="card-header">
           <h2 class="card-title">📈 Daily Progress Trajectory</h2>
@@ -340,7 +443,7 @@
 
     </div>
 
-    <!-- History Logs Table -->
+    <!-- Task History Table -->
     <div class="card">
       <div class="card-header">
         <h2 class="card-title">📂 Mission Task History</h2>
@@ -363,7 +466,7 @@
       </div>
     </div>
 
-    <!-- Danger Zone -->
+    <!-- Danger Zone Card -->
     <div class="danger-zone-card">
       <h2>⚠️ Danger Zone</h2>
       <p>Resetting will permanently wipe all logged entries from your browser.</p>
@@ -422,7 +525,7 @@
       function updateTimer() {
         const diff = MISSION_END.getTime() - new Date().getTime();
         if (diff <= 0) {
-          document.getElementById('countdownVal').innerText = "00 : 00 : 00 : 00";
+          document.getElementById('countdownVal').innerText = "000 : 00 : 00 : 00";
           return;
         }
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
