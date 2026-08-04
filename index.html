@@ -491,6 +491,17 @@
       </div>
 
     </div>
+<div class="card">
+  <h2 class="card-title">💾 Backup & Sync Data</h2>
+  <div style="display: flex; gap: 10px; margin-top: 10px;">
+    <button onclick="exportMissionData()" class="btn-submit" style="background: #22c55e;">📥 Export Backup</button>
+    
+    <label class="btn-submit" style="background: #38bdf8; text-align: center; cursor: pointer;">
+      📤 Import Backup
+      <input type="file" accept=".json" onchange="importMissionData(event)" style="display: none;">
+    </label>
+  </div>
+</div>
 
     <!-- Task History Table -->
     <div class="card">
@@ -1049,6 +1060,38 @@
       progressChart.data.datasets[0].data = dailyLogs.map(l => l.tasksCompleted);
       progressChart.update();
     }
+
+    // 1. Download your data as a backup JSON file
+function exportMissionData() {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dailyLogs, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `mission_backup_${new Date().toISOString().split('T')[0]}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
+
+// 2. Upload and restore data from a JSON file
+function importMissionData(event) {
+  const fileReader = new FileReader();
+  fileReader.onload = function(e) {
+    try {
+      const importedLogs = JSON.parse(e.target.result);
+      if (Array.isArray(importedLogs)) {
+        dailyLogs = importedLogs;
+        saveAndRefresh();
+        alert("Mission data restored successfully!");
+      } else {
+        alert("Invalid file format.");
+      }
+    } catch (err) {
+      alert("Error reading file.");
+    }
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
+
 
     showAuthModal();
     saveAndRefresh();
