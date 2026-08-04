@@ -16,6 +16,7 @@
       --success: #22c55e;
       --danger: #ef4444;
       --warning: #f59e0b;
+      --duo-green: #58cc02;
     }
 
     * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -59,16 +60,17 @@
     .mission-title-group h1 { margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: var(--primary); }
     .mission-title-group p { margin: 0; font-size: 12px; color: var(--text-muted); }
 
-    .stats-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    .stats-container { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
     
     .stat-card {
       background: #0f172a; border: 1px solid var(--card-border);
-      border-radius: 12px; padding: 12px 14px; text-align: center; width: 100%;
+      border-radius: 12px; padding: 12px 14px; text-align: center; flex: 1; min-width: 120px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-    .stat-card .label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-    .stat-card .value { font-size: 18px; font-weight: 900; color: var(--text-main); margin-top: 4px; }
+    .stat-card .label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .stat-card .value { font-size: 17px; font-weight: 900; color: var(--text-main); margin-top: 4px; }
     .stat-card .value-highlight { color: var(--primary); }
+    .stat-card .value-duo { color: var(--duo-green); }
     
     .stat-card .value-timer { 
       color: var(--warning); font-family: monospace; letter-spacing: 0px; 
@@ -180,6 +182,7 @@
     .badge-wrap { display: flex; gap: 4px; flex-wrap: wrap; }
     .badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 2px; }
     .badge-success { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-duo { background: rgba(88,204,2,0.15); color: var(--duo-green); border: 1px solid rgba(88,204,2,0.4); }
     .badge-off { background: rgba(148,163,184,0.1); color: #64748b; border: 1px solid rgba(148,163,184,0.2); }
 
     .action-btn-group { display: flex; gap: 4px; }
@@ -242,12 +245,11 @@
     @media (min-width: 768px) {
       body { padding: 24px; }
       .mission-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 20px 24px; }
-      .stats-container { flex-direction: row; width: auto; gap: 16px; }
-      .stat-card { min-width: 160px; padding: 12px 18px; }
-      .stat-card:nth-child(2) { min-width: 210px; }
+      .stats-container { flex-direction: row; width: auto; gap: 10px; }
+      .stat-card { min-width: 125px; padding: 12px 14px; }
+      .stat-card:nth-child(2) { min-width: 180px; }
       .stat-card .value-timer { font-size: 16px; }
       
-      /* Grid Layout Always 2-Columns on Desktop */
       .grid-layout { 
         display: grid; 
         grid-template-columns: 1fr 1fr; 
@@ -285,7 +287,6 @@
         </div>
       </div>
 
-      <!-- Admin Passcode Verification Step -->
       <div id="gateStepAdmin" style="display: none;">
         <h3 id="adminModalTitle">🔒 Admin Password Required</h3>
         <p id="adminModalDesc">Enter password to unlock full management rights.</p>
@@ -312,7 +313,7 @@
 
   <div class="container">
 
-    <!-- Active Mode Indicator Bar (Clean & Compact) -->
+    <!-- Active Mode Indicator Bar -->
     <div class="role-bar">
       <span id="currentRoleBadge" class="role-badge role-user">👤 User</span>
       <button class="btn-switch-role" onclick="showAuthModal()">🔄 Switch Role</button>
@@ -338,13 +339,23 @@
           <div class="label">Progress</div>
           <div class="value" id="progressVal">0 / 500</div>
         </div>
+        <!-- Duolingo Double Lesson Target Days Counter -->
+        <div class="stat-card">
+          <div class="label">1-Lesson Duo Left</div>
+          <div class="value value-duo" id="duo1LessonAllowanceVal">410 Days</div>
+        </div>
+        <!-- Duolingo Single Lesson Target Days Counter -->
+        <div class="stat-card">
+          <div class="label">2-Lesson Duo Left</div>
+          <div class="value value-duo" id="duo2LessonAllowanceVal">90 Days</div>
+        </div>
       </div>
     </div>
 
     <!-- Main Grid -->
     <div class="grid-layout" id="mainGridLayout">
 
-      <!-- Left Side in User Mode / Form in Admin Mode -->
+      <!-- Left Side: Log Daily Form -->
       <div class="card" id="formCard">
         <div class="card-header">
           <h2 class="card-title">📝 Log Daily Tasks</h2>
@@ -353,6 +364,14 @@
         <div class="form-group">
           <label>Date</label>
           <input type="date" id="logDate" class="form-control" onchange="handleDateChange()">
+        </div>
+
+        <div class="form-group">
+          <label>🦉 Duolingo Target Completed Today</label>
+          <select id="duoLessonsSelect" class="form-control">
+            <option value="1">1 Lesson</option>
+            <option value="2">2 Lessons</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -392,7 +411,7 @@
         </div>
       </div>
 
-      <!-- Right Side in User View: Overall Performance Summary Card -->
+      <!-- User Performance Card -->
       <div class="card" id="userStatsCard" style="display: none; margin-bottom: 0;">
         <div class="card-header">
           <h2 class="card-title">🏆 Overall Mission Performance</h2>
@@ -497,6 +516,10 @@
     const MISSION_END = new Date(MISSION_START.getTime() + (TOTAL_MISSION_DAYS * 24 * 60 * 60 * 1000));
     const REQUIRED_PASSPHRASE = "ZeeshanAbbasIsGoingToResetMissionOf500DAYS";
 
+    // Initial Allowance Targets based on 129 score goal (590 total lessons)
+    const BASE_1_LESSON_DAYS = 410;
+    const BASE_2_LESSON_DAYS = 90;
+
     let dailyLogs = JSON.parse(localStorage.getItem('mission_clean_logs_v5')) || [];
     let isEditing = false;
     let currentUserRole = 'user';
@@ -507,7 +530,6 @@
       exercise: '🏃 Workout', eyeCare: '👁️ Eye Care', social: '🤝 Social', review: '📖 Night Review'
     };
 
-    /* Security Role Gate Logic */
     function showAuthModal() {
       document.getElementById('gateStep1').style.display = 'block';
       document.getElementById('gateStepAdmin').style.display = 'none';
@@ -623,7 +645,6 @@
         return;
       }
 
-      // 1. Completion Rate
       let totalCompletedTasks = 0;
       let totalPossibleTasks = dailyLogs.length * 7;
       let habitCounts = { coding: 0, english: 0, study30: 0, exercise: 0, eyeCare: 0, social: 0, review: 0 };
@@ -640,7 +661,6 @@
       const overallPct = Math.round((totalCompletedTasks / totalPossibleTasks) * 100);
       document.getElementById('overallCompletionRate').innerText = `${overallPct}%`;
 
-      // 2. Streak
       let streak = 0;
       const sortedLogs = dailyLogs.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
       for (let i = 0; i < sortedLogs.length; i++) {
@@ -649,14 +669,32 @@
       }
       document.getElementById('currentStreakVal').innerText = `🔥 ${streak} Days`;
 
-      // 3. Top Habit
       let topHabitKey = Object.keys(habitCounts).reduce((a, b) => habitCounts[a] > habitCounts[b] ? a : b);
       document.getElementById('topHabitVal').innerText = TASK_LABELS[topHabitKey] || 'None';
 
-      // 4. Total Screen Time
       const hrs = Math.floor(totalMinutes / 60);
       const mins = totalMinutes % 60;
       document.getElementById('totalScreenTimeVal').innerText = `${hrs}h ${mins}m`;
+    }
+
+    function updateDuoAllowanceDisplay() {
+      let logged1LessonDays = 0;
+      let logged2LessonDays = 0;
+
+      dailyLogs.forEach(log => {
+        let lessons = parseInt(log.duoLessons) || 1;
+        if (lessons >= 2) {
+          logged2LessonDays++;
+        } else {
+          logged1LessonDays++;
+        }
+      });
+
+      let remaining1LessonDays = Math.max(0, BASE_1_LESSON_DAYS - logged1LessonDays);
+      let remaining2LessonDays = Math.max(0, BASE_2_LESSON_DAYS - logged2LessonDays);
+
+      document.getElementById('duo1LessonAllowanceVal').innerText = `${remaining1LessonDays} Days`;
+      document.getElementById('duo2LessonAllowanceVal').innerText = `${remaining2LessonDays} Days`;
     }
 
     function changeAdminPassword() {
@@ -685,7 +723,6 @@
       setTimeout(() => { errBox.style.display = "none"; errBox.style.color = "var(--danger)"; }, 3000);
     }
 
-    /* Standard App Operations */
     function initTimeDropdowns() {
       const hrsSelect = document.getElementById('screenHoursSelect');
       const minsSelect = document.getElementById('screenMinutesSelect');
@@ -758,6 +795,7 @@
 
     function resetFormHabits() {
       Object.keys(currentHabits).forEach(k => setHabitState(k, false));
+      document.getElementById('duoLessonsSelect').value = "1";
       document.getElementById('screenHoursSelect').value = 0;
       document.getElementById('screenMinutesSelect').value = 0;
       isEditing = false;
@@ -785,6 +823,7 @@
       const newLog = {
         dayNum: Math.max(0, getMissionDayNumber(new Date(dateVal))),
         date: dateVal,
+        duoLessons: parseInt(document.getElementById('duoLessonsSelect').value) || 1,
         habits: { ...currentHabits },
         tasksCompleted: tasksCompletedCount,
         screenHours: parseInt(document.getElementById('screenHoursSelect').value) || 0,
@@ -811,6 +850,7 @@
 
     function loadLogIntoForm(log) {
       Object.keys(log.habits).forEach(k => setHabitState(k, log.habits[k]));
+      document.getElementById('duoLessonsSelect').value = log.duoLessons || "1";
       document.getElementById('screenHoursSelect').value = log.screenHours || 0;
       document.getElementById('screenMinutesSelect').value = log.screenMinutes || 0;
       isEditing = true;
@@ -860,6 +900,7 @@
     function saveAndRefresh(isReset = false) {
       localStorage.setItem('mission_clean_logs_v5', JSON.stringify(dailyLogs));
       updateMissionHeader();
+      updateDuoAllowanceDisplay();
       updateMonthFilterOptions(isReset);
       calculateOverallSummaryStats();
       renderLogsTable();
@@ -867,9 +908,18 @@
     }
 
     function updateMissionHeader() {
-      const currentDay = Math.max(1, getMissionDayNumber(new Date()));
-      document.getElementById('currentDayVal').innerText = `Day ${currentDay}`;
-      document.getElementById('progressVal').innerText = `${dailyLogs.length} / ${TOTAL_MISSION_DAYS}`;
+      const rawDay = getMissionDayNumber(new Date());
+  
+  if (rawDay < 1) {
+    // Before August 13
+    const daysUntilStart = Math.abs(rawDay) + 1;
+    document.getElementById('currentDayVal').innerText = `Starts in ${daysUntilStart}d`;
+  } else {
+    // August 13 onwards
+    document.getElementById('currentDayVal').innerText = `Day ${rawDay}`;
+  }
+
+  document.getElementById('progressVal').innerText = `${dailyLogs.length} / ${TOTAL_MISSION_DAYS}`;
     }
 
     function updateMonthFilterOptions(isReset = false) {
@@ -906,6 +956,11 @@
 
       filteredLogs.slice().reverse().forEach(log => {
         let habitsBadgesHTML = '<div class="badge-wrap">';
+        
+        // Show Duolingo Badge First
+        let duoCount = log.duoLessons || 1;
+        habitsBadgesHTML += `<span class="badge badge-duo">🦉 Duo: ${duoCount} ${duoCount === 1 ? 'Lsn' : 'Lsns'}</span>`;
+
         Object.keys(log.habits).forEach(k => {
           const isDone = log.habits[k];
           habitsBadgesHTML += `<span class="badge ${isDone ? 'badge-success' : 'badge-off'}">${TASK_LABELS[k]} ${isDone ? '✅' : '❌'}</span>`;
@@ -943,7 +998,6 @@
       progressChart.update();
     }
 
-    /* Initialize Gatekeeper and Screen on Load */
     showAuthModal();
     saveAndRefresh();
   </script>
