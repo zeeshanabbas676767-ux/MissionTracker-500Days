@@ -17,6 +17,7 @@
       --danger: #ef4444;
       --warning: #f59e0b;
       --duo-green: #58cc02;
+      --pink-accent: #f43f5e;
     }
 
     * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -50,6 +51,44 @@
       padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
     }
 
+    /* Big Standalone Top Countdown Header Block */
+    .big-countdown-banner {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+    }
+    .timer-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .timer-num {
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1;
+      color: #ffffff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    .timer-num.sec-color {
+      color: var(--pink-accent);
+    }
+    .timer-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+
     /* Top Mission Header */
     .mission-header {
       background: var(--card-bg); border: 1px solid var(--card-border);
@@ -64,18 +103,13 @@
     
     .stat-card {
       background: #0f172a; border: 1px solid var(--card-border);
-      border-radius: 12px; padding: 10px 8px; text-align: center; flex: 1 1 calc(50% - 10px); min-width: 0px;
+      border-radius: 12px; padding: 10px 8px; text-align: center; flex: 1 1 calc(50% - 10px); min-width: 0;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
     .stat-card .label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
     .stat-card .value { font-size: 17px; font-weight: 900; color: var(--text-main); margin-top: 4px; }
     .stat-card .value-highlight { color: var(--primary); }
     .stat-card .value-duo { color: var(--duo-green); }
-    
-    .stat-card .value-timer { 
-      color: var(--warning); font-family: monospace; letter-spacing: 0px; 
-      font-size: 13px; white-space: nowrap; width: 100%; text-align: center;
-    }
 
     /* Grid Layout */
     .grid-layout {
@@ -244,11 +278,13 @@
     /* Laptop Responsive Overrides */
     @media (min-width: 768px) {
       body { padding: 24px; }
+      .big-countdown-banner { padding: 24px; }
+      .timer-num { font-size: 58px; }
+      .timer-label { font-size: 12px; letter-spacing: 2px; }
+
       .mission-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 20px 24px; }
       .stats-container { flex-direction: row; width: auto; gap: 10px; }
-      .stat-card { min-width: 125px; padding: 12px 14px; }
-      .stat-card:nth-child(2) { min-width: 180px; }
-      .stat-card .value-timer { font-size: 16px; }
+      .stat-card { min-width: 130px; flex: 1; padding: 12px 14px; }
       
       .grid-layout { 
         display: grid; 
@@ -319,6 +355,26 @@
       <button class="btn-switch-role" onclick="showAuthModal()">🔄 Switch Role</button>
     </div>
 
+    <!-- Big Prominent Top Countdown Banner -->
+    <div class="big-countdown-banner">
+      <div class="timer-block">
+        <span class="timer-num" id="cdDays">000</span>
+        <span class="timer-label">DAYS</span>
+      </div>
+      <div class="timer-block">
+        <span class="timer-num" id="cdHours">00</span>
+        <span class="timer-label">HOURS</span>
+      </div>
+      <div class="timer-block">
+        <span class="timer-num" id="cdMins">00</span>
+        <span class="timer-label">MINUTES</span>
+      </div>
+      <div class="timer-block">
+        <span class="timer-num sec-color" id="cdSecs">00</span>
+        <span class="timer-label">SECONDS</span>
+      </div>
+    </div>
+
     <!-- Mission Header -->
     <div class="mission-header">
       <div class="mission-title-group">
@@ -329,22 +385,16 @@
       <div class="stats-container">
         <div class="stat-card">
           <div class="label">Current Day</div>
-          <div class="value value-highlight" id="currentDayVal">Day 1</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">Countdown</div>
-          <div class="value value-timer" id="countdownVal">000 : 00 : 00 : 00</div>
+          <div class="value value-highlight" id="currentDayVal">Starts in 9d</div>
         </div>
         <div class="stat-card">
           <div class="label">Progress</div>
           <div class="value" id="progressVal">0 / 500</div>
         </div>
-        <!-- Duolingo Double Lesson Target Days Counter -->
         <div class="stat-card">
           <div class="label">1-Lesson Duo Left</div>
           <div class="value value-duo" id="duo1LessonAllowanceVal">410 Days</div>
         </div>
-        <!-- Duolingo Single Lesson Target Days Counter -->
         <div class="stat-card">
           <div class="label">2-Lesson Duo Left</div>
           <div class="value value-duo" id="duo2LessonAllowanceVal">90 Days</div>
@@ -739,7 +789,10 @@
       function updateTimer() {
         const diff = MISSION_END.getTime() - new Date().getTime();
         if (diff <= 0) {
-          document.getElementById('countdownVal').innerText = "000 : 00 : 00 : 00";
+          document.getElementById('cdDays').innerText = "00";
+          document.getElementById('cdHours').innerText = "00";
+          document.getElementById('cdMins').innerText = "00";
+          document.getElementById('cdSecs').innerText = "00";
           return;
         }
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -747,8 +800,11 @@
         const minutes = Math.floor((diff / (1000 * 60)) % 60);
         const seconds = Math.floor((diff / 1000) % 60);
         const pad = (n) => String(n).padStart(2, '0');
-       // document.getElementById('countdownVal').innerText = `${days} : ${pad(hours)} : ${pad(minutes)} : ${pad(seconds)}`;
-      document.getElementById('countdownVal').innerText = `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+
+        document.getElementById('cdDays').innerText = days;
+        document.getElementById('cdHours').innerText = pad(hours);
+        document.getElementById('cdMins').innerText = pad(minutes);
+        document.getElementById('cdSecs').innerText = pad(seconds);
       }
       updateTimer();
       setInterval(updateTimer, 1000);
@@ -910,17 +966,13 @@
 
     function updateMissionHeader() {
       const rawDay = getMissionDayNumber(new Date());
-  
-  if (rawDay < 1) {
-    // Before August 13
-    const daysUntilStart = Math.abs(rawDay) + 1;
-    document.getElementById('currentDayVal').innerText = `Starts in ${daysUntilStart}d`;
-  } else {
-    // August 13 onwards
-    document.getElementById('currentDayVal').innerText = `Day ${rawDay}`;
-  }
-
-  document.getElementById('progressVal').innerText = `${dailyLogs.length} / ${TOTAL_MISSION_DAYS}`;
+      if (rawDay < 1) {
+        const daysUntilStart = Math.abs(rawDay) + 1;
+        document.getElementById('currentDayVal').innerText = `Starts in ${daysUntilStart}d`;
+      } else {
+        document.getElementById('currentDayVal').innerText = `Day ${rawDay}`;
+      }
+      document.getElementById('progressVal').innerText = `${dailyLogs.length} / ${TOTAL_MISSION_DAYS}`;
     }
 
     function updateMonthFilterOptions(isReset = false) {
@@ -958,7 +1010,6 @@
       filteredLogs.slice().reverse().forEach(log => {
         let habitsBadgesHTML = '<div class="badge-wrap">';
         
-        // Show Duolingo Badge First
         let duoCount = log.duoLessons || 1;
         habitsBadgesHTML += `<span class="badge badge-duo">🦉 Duo: ${duoCount} ${duoCount === 1 ? 'Lsn' : 'Lsns'}</span>`;
 
