@@ -64,7 +64,7 @@
     
     .stat-card {
       background: #0f172a; border: 1px solid var(--card-border);
-      border-radius: 12px; padding: 12px 14px; text-align: center; flex: 1; min-width: 120px;
+      border-radius: 12px; padding: 10px 8px; text-align: center; flex: 1 1 calc(50% - 10px); min-width: 0px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
     .stat-card .label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
@@ -74,7 +74,7 @@
     
     .stat-card .value-timer { 
       color: var(--warning); font-family: monospace; letter-spacing: 0px; 
-      font-size: 15px; white-space: nowrap; width: 100%; text-align: center;
+      font-size: 13px; white-space: nowrap; width: 100%; text-align: center;
     }
 
     /* Grid Layout */
@@ -747,7 +747,8 @@
         const minutes = Math.floor((diff / (1000 * 60)) % 60);
         const seconds = Math.floor((diff / 1000) % 60);
         const pad = (n) => String(n).padStart(2, '0');
-        document.getElementById('countdownVal').innerText = `${days} : ${pad(hours)} : ${pad(minutes)} : ${pad(seconds)}`;
+       // document.getElementById('countdownVal').innerText = `${days} : ${pad(hours)} : ${pad(minutes)} : ${pad(seconds)}`;
+      document.getElementById('countdownVal').innerText = `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
       }
       updateTimer();
       setInterval(updateTimer, 1000);
