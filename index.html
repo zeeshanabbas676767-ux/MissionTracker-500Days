@@ -18,6 +18,7 @@
       --warning: #f59e0b;
       --duo-green: #58cc02;
       --pink-accent: #f43f5e;
+      --yt-red: #ff0000;
     }
 
     * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -165,6 +166,37 @@
       margin-top: 4px;
     }
 
+    /* Backup Buttons Styling */
+    .backup-btn-grid {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+    .btn-backup-export {
+      flex: 1;
+      background: #22c55e;
+      color: #0b0f19;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-backup-import {
+      flex: 1;
+      background: #38bdf8;
+      color: #0b0f19;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      display: inline-block;
+    }
+
     /* Form Controls */
     .form-group { margin-bottom: 14px; width: 100%; }
     .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
@@ -185,6 +217,7 @@
       display: flex; align-items: center; justify-content: space-between; transition: 0.2s;
     }
     .toggle-btn.active { background: rgba(56,189,248,0.15); border-color: var(--primary); color: var(--primary); }
+    .toggle-btn.yt-toggle.active { background: rgba(239,68,68,0.15); border-color: var(--danger); color: #f87171; }
 
     .duration-selects { display: flex; gap: 8px; width: 100%; }
     .duration-selects select { flex: 1; min-width: 0; }
@@ -217,6 +250,7 @@
     .badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 2px; }
     .badge-success { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
     .badge-duo { background: rgba(88,204,2,0.15); color: var(--duo-green); border: 1px solid rgba(88,204,2,0.4); }
+    .badge-yt { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
     .badge-off { background: rgba(148,163,184,0.1); color: #64748b; border: 1px solid rgba(148,163,184,0.2); }
 
     .action-btn-group { display: flex; gap: 4px; }
@@ -402,6 +436,21 @@
       </div>
     </div>
 
+    <!-- Backup & Sync Section (Export / Import) -->
+    <div class="card" style="margin-bottom: 16px;">
+      <div class="card-header" style="margin-bottom: 8px;">
+        <h2 class="card-title">💾 Backup & Sync Mission Data</h2>
+      </div>
+      <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 12px 0;">Export your logs to a JSON file anytime to prevent loss if browser cache is cleared, or import your backup file to restore instantly.</p>
+      <div class="backup-btn-grid">
+        <button onclick="exportMissionData()" class="btn-backup-export">📥 Export Backup (.json)</button>
+        <label class="btn-backup-import">
+          📤 Import Backup (.json)
+          <input type="file" accept=".json" onchange="importMissionData(event)" style="display: none;">
+        </label>
+      </div>
+    </div>
+
     <!-- Main Grid -->
     <div class="grid-layout" id="mainGridLayout">
 
@@ -419,14 +468,19 @@
         <div class="form-group">
           <label>🦉 Duolingo Target Completed Today</label>
           <select id="duoLessonsSelect" class="form-control">
-            <option value="1">1 Lesson</option>
+            <option value="0">0 Lessons (Rest / Skip)</option>
+            <option value="1" selected>1 Lesson</option>
             <option value="2">2 Lessons</option>
+            <option value="3">3+ Lessons (Bonus Pace)</option>
           </select>
         </div>
 
         <div class="form-group">
           <label>Daily Tasks & Habits</label>
           <div class="toggle-grid">
+            <button class="toggle-btn" onclick="toggleHabit(this, 'ytVideo')">🎥 20-25m YT Speaking Video <span>❌</span></button>
+            <button class="toggle-btn" onclick="toggleHabit(this, 'audioListen1h')">🎧 1h English Audio Listening <span>❌</span></button>
+            <button class="toggle-btn" onclick="toggleHabit(this, 'paperWrite10m')">✍️ 10-Min Paper Writing <span>❌</span></button>
             <button class="toggle-btn" onclick="toggleHabit(this, 'coding')">💻 Code / Logic Fix <span>❌</span></button>
             <button class="toggle-btn" onclick="toggleHabit(this, 'english')">🗣️ English Practice <span>❌</span></button>
             <button class="toggle-btn" onclick="toggleHabit(this, 'study30')">📖 30-Min Study <span>❌</span></button>
@@ -491,17 +545,6 @@
       </div>
 
     </div>
-<div class="card">
-  <h2 class="card-title">💾 Backup & Sync Data</h2>
-  <div style="display: flex; gap: 10px; margin-top: 10px;">
-    <button onclick="exportMissionData()" class="btn-submit" style="background: #22c55e;">📥 Export Backup</button>
-    
-    <label class="btn-submit" style="background: #38bdf8; text-align: center; cursor: pointer;">
-      📤 Import Backup
-      <input type="file" accept=".json" onchange="importMissionData(event)" style="display: none;">
-    </label>
-  </div>
-</div>
 
     <!-- Task History Table -->
     <div class="card">
@@ -577,19 +620,64 @@
     const MISSION_END = new Date(MISSION_START.getTime() + (TOTAL_MISSION_DAYS * 24 * 60 * 60 * 1000));
     const REQUIRED_PASSPHRASE = "ZeeshanAbbasIsGoingToResetMissionOf500DAYS";
 
-    // Initial Allowance Targets based on 129 score goal (590 total lessons)
+    // Base allowance targets
     const BASE_1_LESSON_DAYS = 410;
     const BASE_2_LESSON_DAYS = 90;
 
     let dailyLogs = JSON.parse(localStorage.getItem('mission_clean_logs_v5')) || [];
     let isEditing = false;
     let currentUserRole = 'user';
-    let currentHabits = { coding: false, english: false, study30: false, exercise: false, eyeCare: false, social: false, review: false };
+    let currentHabits = { ytVideo: false, audioListen1h: false, paperWrite10m: false, coding: false, english: false, study30: false, exercise: false, eyeCare: false, social: false, review: false };
 
     const TASK_LABELS = {
-      coding: '💻 Code', english: '🗣️ English', study30: '📖 30m Study',
-      exercise: '🏃 Workout', eyeCare: '👁️ Eye Care', social: '🤝 Social', review: '📖 Night Review'
+      ytVideo: '🎥 YT Speaking', 
+      audioListen1h: '🎧 1h Audio',
+      paperWrite10m: '✍️ 10m Paper Write',
+      coding: '💻 Code', 
+      english: '🗣️ English', 
+      study30: '📖 30m Study',
+      exercise: '🏃 Workout', 
+      eyeCare: '👁️ Eye Care', 
+      social: '🤝 Social', 
+      review: '📖 Night Review'
     };
+
+    /* Backup Export / Import Functions */
+    function exportMissionData() {
+      if (dailyLogs.length === 0) {
+        alert("No mission data to export yet!");
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dailyLogs, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `mission_control_backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importMissionData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const fileReader = new FileReader();
+      fileReader.onload = function(e) {
+        try {
+          const importedLogs = JSON.parse(e.target.result);
+          if (Array.isArray(importedLogs)) {
+            dailyLogs = importedLogs;
+            saveAndRefresh();
+            alert("✅ Mission data restored successfully!");
+          } else {
+            alert("❌ Invalid JSON backup file structure.");
+          }
+        } catch (err) {
+          alert("❌ Error reading file. Please make sure it's a valid JSON backup.");
+        }
+      };
+      fileReader.readAsText(file);
+    }
 
     function showAuthModal() {
       document.getElementById('gateStep1').style.display = 'block';
@@ -707,15 +795,15 @@
       }
 
       let totalCompletedTasks = 0;
-      let totalPossibleTasks = dailyLogs.length * 7;
-      let habitCounts = { coding: 0, english: 0, study30: 0, exercise: 0, eyeCare: 0, social: 0, review: 0 };
+      let totalPossibleTasks = dailyLogs.length * Object.keys(TASK_LABELS).length;
+      let habitCounts = { ytVideo: 0, audioListen1h: 0, paperWrite10m: 0, coding: 0, english: 0, study30: 0, exercise: 0, eyeCare: 0, social: 0, review: 0 };
       let totalMinutes = 0;
 
       dailyLogs.forEach(log => {
         totalCompletedTasks += log.tasksCompleted;
         totalMinutes += (log.screenHours || 0) * 60 + (log.screenMinutes || 0);
         Object.keys(log.habits).forEach(k => {
-          if (log.habits[k]) habitCounts[k]++;
+          if (log.habits[k]) habitCounts[k] = (habitCounts[k] || 0) + 1;
         });
       });
 
@@ -743,10 +831,10 @@
       let logged2LessonDays = 0;
 
       dailyLogs.forEach(log => {
-        let lessons = parseInt(log.duoLessons) || 1;
+        let lessons = parseInt(log.duoLessons) || 0;
         if (lessons >= 2) {
           logged2LessonDays++;
-        } else {
+        } else if (lessons === 1) {
           logged1LessonDays++;
         }
       });
@@ -837,7 +925,7 @@
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        scales: { y: { beginAtZero: true, max: 7, ticks: { stepSize: 1 } } }
+        scales: { y: { beginAtZero: true, max: 10, ticks: { stepSize: 1 } } }
       }
     });
 
@@ -891,7 +979,7 @@
       const newLog = {
         dayNum: Math.max(0, getMissionDayNumber(new Date(dateVal))),
         date: dateVal,
-        duoLessons: parseInt(document.getElementById('duoLessonsSelect').value) || 1,
+        duoLessons: parseInt(document.getElementById('duoLessonsSelect').value) || 0,
         habits: { ...currentHabits },
         tasksCompleted: tasksCompletedCount,
         screenHours: parseInt(document.getElementById('screenHoursSelect').value) || 0,
@@ -917,8 +1005,8 @@
     }
 
     function loadLogIntoForm(log) {
-      Object.keys(log.habits).forEach(k => setHabitState(k, log.habits[k]));
-      document.getElementById('duoLessonsSelect').value = log.duoLessons || "1";
+      Object.keys(TASK_LABELS).forEach(k => setHabitState(k, (log.habits && log.habits[k]) || false));
+      document.getElementById('duoLessonsSelect').value = log.duoLessons !== undefined ? log.duoLessons : "1";
       document.getElementById('screenHoursSelect').value = log.screenHours || 0;
       document.getElementById('screenMinutesSelect').value = log.screenMinutes || 0;
       isEditing = true;
@@ -1021,12 +1109,13 @@
       filteredLogs.slice().reverse().forEach(log => {
         let habitsBadgesHTML = '<div class="badge-wrap">';
         
-        let duoCount = log.duoLessons || 1;
+        let duoCount = log.duoLessons !== undefined ? log.duoLessons : 1;
         habitsBadgesHTML += `<span class="badge badge-duo">🦉 Duo: ${duoCount} ${duoCount === 1 ? 'Lsn' : 'Lsns'}</span>`;
 
-        Object.keys(log.habits).forEach(k => {
-          const isDone = log.habits[k];
-          habitsBadgesHTML += `<span class="badge ${isDone ? 'badge-success' : 'badge-off'}">${TASK_LABELS[k]} ${isDone ? '✅' : '❌'}</span>`;
+        Object.keys(TASK_LABELS).forEach(k => {
+          const isDone = log.habits && log.habits[k];
+          const badgeClass = k === 'ytVideo' && isDone ? 'badge-yt' : (isDone ? 'badge-success' : 'badge-off');
+          habitsBadgesHTML += `<span class="badge ${badgeClass}">${TASK_LABELS[k]} ${isDone ? '✅' : '❌'}</span>`;
         });
         habitsBadgesHTML += '</div>';
 
@@ -1060,38 +1149,6 @@
       progressChart.data.datasets[0].data = dailyLogs.map(l => l.tasksCompleted);
       progressChart.update();
     }
-
-    // 1. Download your data as a backup JSON file
-function exportMissionData() {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dailyLogs, null, 2));
-  const downloadAnchor = document.createElement('a');
-  downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", `mission_backup_${new Date().toISOString().split('T')[0]}.json`);
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-}
-
-// 2. Upload and restore data from a JSON file
-function importMissionData(event) {
-  const fileReader = new FileReader();
-  fileReader.onload = function(e) {
-    try {
-      const importedLogs = JSON.parse(e.target.result);
-      if (Array.isArray(importedLogs)) {
-        dailyLogs = importedLogs;
-        saveAndRefresh();
-        alert("Mission data restored successfully!");
-      } else {
-        alert("Invalid file format.");
-      }
-    } catch (err) {
-      alert("Error reading file.");
-    }
-  };
-  fileReader.readAsText(event.target.files[0]);
-}
-
 
     showAuthModal();
     saveAndRefresh();
